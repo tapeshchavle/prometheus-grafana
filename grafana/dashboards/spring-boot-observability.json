@@ -25,7 +25,7 @@
     {
       "id": 3, "type": "stat", "title": "Orders Created (total)",
       "gridPos": {"x":12,"y":0,"w":6,"h":4},
-      "targets": [{"expr": "orders_created_total{application=\"prom-grafana\"}", "legendFormat": "orders"}],
+      "targets": [{"expr": "orders_total{application=\"prom-grafana\",type=\"order\"}", "legendFormat": "orders"}],
       "datasource": "Prometheus",
       "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "background"},
       "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "thresholds": {"steps": [{"color":"blue","value":0}]}}}
@@ -49,9 +49,8 @@
       "id": 6, "type": "timeseries", "title": "HTTP Latency P50 / P95 / P99",
       "gridPos": {"x":12,"y":4,"w":12,"h":8},
       "targets": [
-        {"expr": "histogram_quantile(0.50, rate(http_server_requests_seconds_bucket{application=\"prom-grafana\"}[1m]))", "legendFormat": "P50"},
-        {"expr": "histogram_quantile(0.95, rate(http_server_requests_seconds_bucket{application=\"prom-grafana\"}[1m]))", "legendFormat": "P95"},
-        {"expr": "histogram_quantile(0.99, rate(http_server_requests_seconds_bucket{application=\"prom-grafana\"}[1m]))", "legendFormat": "P99"}
+        {"expr": "rate(http_server_requests_seconds_sum{application=\"prom-grafana\"}[1m]) / rate(http_server_requests_seconds_count{application=\"prom-grafana\"}[1m])", "legendFormat": "Avg Response Time"},
+        {"expr": "rate(http_server_requests_seconds_max{application=\"prom-grafana\"}[1m])", "legendFormat": "Max Response Time"}
       ],
       "datasource": "Prometheus",
       "fieldConfig": {"defaults": {"unit": "s"}}
@@ -60,7 +59,7 @@
       "id": 7, "type": "timeseries", "title": "Orders Created vs Failed",
       "gridPos": {"x":0,"y":12,"w":12,"h":8},
       "targets": [
-        {"expr": "rate(orders_created_total{application=\"prom-grafana\"}[1m])", "legendFormat": "Created/s"},
+        {"expr": "rate(orders_total{application=\"prom-grafana\",type=\"order\"}[1m])", "legendFormat": "Created/s"},
         {"expr": "rate(orders_failed_total{application=\"prom-grafana\"}[1m])",  "legendFormat": "Failed/s"}
       ],
       "datasource": "Prometheus",
@@ -70,8 +69,8 @@
       "id": 8, "type": "timeseries", "title": "Order Processing Latency P95",
       "gridPos": {"x":12,"y":12,"w":12,"h":8},
       "targets": [
-        {"expr": "histogram_quantile(0.95, rate(order_processing_duration_seconds_bucket{application=\"prom-grafana\"}[1m]))", "legendFormat": "P95"},
-        {"expr": "histogram_quantile(0.50, rate(order_processing_duration_seconds_bucket{application=\"prom-grafana\"}[1m]))", "legendFormat": "P50"}
+        {"expr": "order_processing_duration_seconds{application=\"prom-grafana\",quantile=\"0.95\"}", "legendFormat": "P95"},
+        {"expr": "order_processing_duration_seconds{application=\"prom-grafana\",quantile=\"0.5\"}", "legendFormat": "P50"}
       ],
       "datasource": "Prometheus",
       "fieldConfig": {"defaults": {"unit": "s"}}
@@ -79,7 +78,7 @@
     {
       "id": 9, "type": "timeseries", "title": "Inventory Level",
       "gridPos": {"x":0,"y":20,"w":8,"h":8},
-      "targets": [{"expr": "inventory_items_total{application=\"prom-grafana\"}", "legendFormat": "Items in Stock"}],
+      "targets": [{"expr": "inventory_items{application=\"prom-grafana\"}", "legendFormat": "Items in Stock"}],
       "datasource": "Prometheus",
       "fieldConfig": {"defaults": {"unit": "short", "thresholds": {"steps": [{"color":"red","value":0},{"color":"yellow","value":20},{"color":"green","value":50}]}, "custom": {"thresholdsStyle": {"mode": "area"}}}}
     },
@@ -114,8 +113,8 @@
       "id": 13, "type": "timeseries", "title": "External API Latency",
       "gridPos": {"x":12,"y":28,"w":12,"h":8},
       "targets": [
-        {"expr": "histogram_quantile(0.95, rate(external_api_duration_seconds_bucket{application=\"prom-grafana\"}[1m]))", "legendFormat": "P95"},
-        {"expr": "histogram_quantile(0.50, rate(external_api_duration_seconds_bucket{application=\"prom-grafana\"}[1m]))", "legendFormat": "P50"}
+        {"expr": "external_api_duration_seconds{application=\"prom-grafana\",quantile=\"0.95\"}", "legendFormat": "P95"},
+        {"expr": "external_api_duration_seconds{application=\"prom-grafana\",quantile=\"0.5\"}", "legendFormat": "P50"}
       ],
       "datasource": "Prometheus",
       "fieldConfig": {"defaults": {"unit": "s"}}
