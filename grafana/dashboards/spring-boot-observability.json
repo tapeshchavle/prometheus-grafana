@@ -1,0 +1,144 @@
+{
+  "title": "Spring Boot Observability — prom-grafana",
+  "uid": "prom-grafana-001",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "5s",
+  "time": { "from": "now-15m", "to": "now" },
+  "panels": [
+    {
+      "id": 1, "type": "stat", "title": "HTTP Request Rate (req/s)",
+      "gridPos": {"x":0,"y":0,"w":6,"h":4},
+      "targets": [{"expr": "rate(http_server_requests_seconds_count{application=\"prom-grafana\"}[1m])", "legendFormat": "req/s"}],
+      "datasource": "Prometheus",
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "background"},
+      "fieldConfig": {"defaults": {"unit": "reqps", "color": {"mode": "thresholds"}, "thresholds": {"steps": [{"color":"green","value":0},{"color":"yellow","value":5},{"color":"red","value":20}]}}}
+    },
+    {
+      "id": 2, "type": "stat", "title": "HTTP Error Rate (5xx req/s)",
+      "gridPos": {"x":6,"y":0,"w":6,"h":4},
+      "targets": [{"expr": "rate(http_server_requests_seconds_count{application=\"prom-grafana\",status=~\"5..\"}[1m])", "legendFormat": "errors/s"}],
+      "datasource": "Prometheus",
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "background"},
+      "fieldConfig": {"defaults": {"unit": "reqps", "color": {"mode": "thresholds"}, "thresholds": {"steps": [{"color":"green","value":0},{"color":"red","value":0.1}]}}}
+    },
+    {
+      "id": 3, "type": "stat", "title": "Orders Created (total)",
+      "gridPos": {"x":12,"y":0,"w":6,"h":4},
+      "targets": [{"expr": "orders_created_total{application=\"prom-grafana\"}", "legendFormat": "orders"}],
+      "datasource": "Prometheus",
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "background"},
+      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "thresholds": {"steps": [{"color":"blue","value":0}]}}}
+    },
+    {
+      "id": 4, "type": "stat", "title": "Active Orders (gauge)",
+      "gridPos": {"x":18,"y":0,"w":6,"h":4},
+      "targets": [{"expr": "orders_active{application=\"prom-grafana\"}", "legendFormat": "active"}],
+      "datasource": "Prometheus",
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "background"},
+      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "thresholds": {"steps": [{"color":"green","value":0},{"color":"yellow","value":5},{"color":"red","value":10}]}}}
+    },
+    {
+      "id": 5, "type": "timeseries", "title": "HTTP Request Rate by Endpoint",
+      "gridPos": {"x":0,"y":4,"w":12,"h":8},
+      "targets": [{"expr": "rate(http_server_requests_seconds_count{application=\"prom-grafana\"}[1m])", "legendFormat": "{{method}} {{uri}} {{status}}"}],
+      "datasource": "Prometheus",
+      "fieldConfig": {"defaults": {"unit": "reqps"}}
+    },
+    {
+      "id": 6, "type": "timeseries", "title": "HTTP Latency P50 / P95 / P99",
+      "gridPos": {"x":12,"y":4,"w":12,"h":8},
+      "targets": [
+        {"expr": "histogram_quantile(0.50, rate(http_server_requests_seconds_bucket{application=\"prom-grafana\"}[1m]))", "legendFormat": "P50"},
+        {"expr": "histogram_quantile(0.95, rate(http_server_requests_seconds_bucket{application=\"prom-grafana\"}[1m]))", "legendFormat": "P95"},
+        {"expr": "histogram_quantile(0.99, rate(http_server_requests_seconds_bucket{application=\"prom-grafana\"}[1m]))", "legendFormat": "P99"}
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {"defaults": {"unit": "s"}}
+    },
+    {
+      "id": 7, "type": "timeseries", "title": "Orders Created vs Failed",
+      "gridPos": {"x":0,"y":12,"w":12,"h":8},
+      "targets": [
+        {"expr": "rate(orders_created_total{application=\"prom-grafana\"}[1m])", "legendFormat": "Created/s"},
+        {"expr": "rate(orders_failed_total{application=\"prom-grafana\"}[1m])",  "legendFormat": "Failed/s"}
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {"defaults": {"unit": "reqps"}}
+    },
+    {
+      "id": 8, "type": "timeseries", "title": "Order Processing Latency P95",
+      "gridPos": {"x":12,"y":12,"w":12,"h":8},
+      "targets": [
+        {"expr": "histogram_quantile(0.95, rate(order_processing_duration_seconds_bucket{application=\"prom-grafana\"}[1m]))", "legendFormat": "P95"},
+        {"expr": "histogram_quantile(0.50, rate(order_processing_duration_seconds_bucket{application=\"prom-grafana\"}[1m]))", "legendFormat": "P50"}
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {"defaults": {"unit": "s"}}
+    },
+    {
+      "id": 9, "type": "timeseries", "title": "Inventory Level",
+      "gridPos": {"x":0,"y":20,"w":8,"h":8},
+      "targets": [{"expr": "inventory_items_total{application=\"prom-grafana\"}", "legendFormat": "Items in Stock"}],
+      "datasource": "Prometheus",
+      "fieldConfig": {"defaults": {"unit": "short", "thresholds": {"steps": [{"color":"red","value":0},{"color":"yellow","value":20},{"color":"green","value":50}]}, "custom": {"thresholdsStyle": {"mode": "area"}}}}
+    },
+    {
+      "id": 10, "type": "timeseries", "title": "Active User Sessions",
+      "gridPos": {"x":8,"y":20,"w":8,"h":8},
+      "targets": [{"expr": "active_user_sessions{application=\"prom-grafana\"}", "legendFormat": "Sessions"}],
+      "datasource": "Prometheus",
+      "fieldConfig": {"defaults": {"unit": "short"}}
+    },
+    {
+      "id": 11, "type": "timeseries", "title": "Login Success vs Failure",
+      "gridPos": {"x":16,"y":20,"w":8,"h":8},
+      "targets": [
+        {"expr": "rate(user_login_total{application=\"prom-grafana\",status=\"success\"}[1m])", "legendFormat": "Success/s"},
+        {"expr": "rate(user_login_total{application=\"prom-grafana\",status=\"failure\"}[1m])", "legendFormat": "Failure/s"}
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {"defaults": {"unit": "reqps"}}
+    },
+    {
+      "id": 12, "type": "timeseries", "title": "External API Calls & Errors",
+      "gridPos": {"x":0,"y":28,"w":12,"h":8},
+      "targets": [
+        {"expr": "rate(external_api_calls_total{application=\"prom-grafana\"}[1m])",  "legendFormat": "Calls/s"},
+        {"expr": "rate(external_api_errors_total{application=\"prom-grafana\"}[1m])", "legendFormat": "Errors/s"}
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {"defaults": {"unit": "reqps"}}
+    },
+    {
+      "id": 13, "type": "timeseries", "title": "External API Latency",
+      "gridPos": {"x":12,"y":28,"w":12,"h":8},
+      "targets": [
+        {"expr": "histogram_quantile(0.95, rate(external_api_duration_seconds_bucket{application=\"prom-grafana\"}[1m]))", "legendFormat": "P95"},
+        {"expr": "histogram_quantile(0.50, rate(external_api_duration_seconds_bucket{application=\"prom-grafana\"}[1m]))", "legendFormat": "P50"}
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {"defaults": {"unit": "s"}}
+    },
+    {
+      "id": 14, "type": "timeseries", "title": "JVM Heap Memory Used",
+      "gridPos": {"x":0,"y":36,"w":12,"h":8},
+      "targets": [
+        {"expr": "jvm_memory_used_bytes{application=\"prom-grafana\",area=\"heap\"}", "legendFormat": "Heap Used"},
+        {"expr": "jvm_memory_max_bytes{application=\"prom-grafana\",area=\"heap\"}",  "legendFormat": "Heap Max"}
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {"defaults": {"unit": "bytes"}}
+    },
+    {
+      "id": 15, "type": "timeseries", "title": "CPU Usage & GC Pauses",
+      "gridPos": {"x":12,"y":36,"w":12,"h":8},
+      "targets": [
+        {"expr": "process_cpu_usage{application=\"prom-grafana\"}", "legendFormat": "CPU Usage"},
+        {"expr": "rate(jvm_gc_pause_seconds_sum{application=\"prom-grafana\"}[1m])", "legendFormat": "GC pause rate"}
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {"defaults": {"unit": "percentunit"}}
+    }
+  ]
+}
