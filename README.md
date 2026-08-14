@@ -1,4 +1,4 @@
-# 📊 Spring Boot — Prometheus & Grafana Observability
+ # 📊 Spring Boot — Prometheus & Grafana Observability
 
 > A complete, production-style observability example built with **Spring Boot 3.3.5**, **Micrometer**, **Prometheus**, and **Grafana**.  
 > Covers JVM metrics, HTTP metrics, and custom business metrics — all auto-scraped and visualised in a pre-built dashboard.
